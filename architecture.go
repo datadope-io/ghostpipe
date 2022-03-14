@@ -141,6 +141,16 @@ func (a *Architecture) AddMonkey(monkey func(simgo.Process)) {
 func (a *Architecture) CytoscapeGraph() string {
 	nodes := []CSNode{}
 
+	for _, server := range a.Servers {
+		nodes = append(nodes, CSNode{
+			Data: CSNodeData{
+				ID:    server.Name,
+				Value: server.Name,
+				Name:  server.Name,
+			},
+		})
+	}
+
 	for _, db := range a.DBs {
 		nodes = append(nodes, CSNode{
 			Data: CSNodeData{

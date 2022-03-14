@@ -155,46 +155,8 @@ func main() {
 	})
 
 	// Start the simulation.
-	fmt.Println("Starting simulator...")
-	// The parameter is the function able to trigger alarms
-	simulation_duration := 60.0 * 10
-	a.Start(simulation_duration)
-	fmt.Println("Stopping simulator...")
+	fmt.Printf("Starting simulator...\n\n")
 
-	/*
-		time.Sleep(2 * time.Second)
-		fmt.Println("db1 down")
-		db1.PingAlarm = AlarmTriggered
-
-		time.Sleep(8 * time.Second)
-
-		fmt.Println("Stopping simulator...")
-		a.Stop()
-	*/
-	/*
-		time.Sleep(2 * time.Second)
-
-		fmt.Println("db1 down")
-
-		db1.PingAlarm = AlarmTriggered
-
-		// Tras otro periodo, simulamos que se recupera la db
-		time.Sleep(4 * time.Second)
-
-		fmt.Println("db1 up")
-
-		db1.PingAlarm = AlarmEnabled
-
-		// Y un rato después se vuelve a caer
-		time.Sleep(4 * time.Second)
-
-		fmt.Println("db1 down")
-
-		db1.PingAlarm = AlarmEnabled
-		db1.PingAlarm = AlarmTriggered
-
-		_ = backend1 // TODO borrar
-
-		time.Sleep(20 * time.Second)
-	*/
+	a.Start(60.0 * 10) // the parameter is the simulation time
+	fmt.Println("\nStopping simulator...")
 }
