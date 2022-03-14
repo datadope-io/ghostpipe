@@ -32,7 +32,7 @@ func TestCytoscapeGraph(t *testing.T) {
 			{"data":{"id":"frontend1","value":"frontend1","name":"frontend1"}}
 		],
 		"edges":[
-			{"data":{"source":"db1","target":"backend1"}},
+			{"data":{"source":"backend1","target":"db1"}},
 			{"data":{"source":"frontend1","target":"backend1"}}
 		]
 	}

@@ -28,10 +28,10 @@ func (b *Backend) GetName() string {
 // CheckAlarms print a message if the server has alarms.
 // It check alarms specific to the backend, plus generic alarms for the server
 // and also generate an alarm if the database is not available.
-func (b *Backend) CheckAlarms() {
+func (b *Backend) CheckAlarms(t float64) {
 	if b.ProcAlarm == AlarmTriggered {
 		b.ProcAlarm = AlarmACK
-		b.mon.handleAlarm(b.Name, "Proc")
+		b.mon.handleAlarm(b.Name, "Proc", t)
 	}
 
 	// Set the local db connection alarm based on the state of the database.
@@ -41,11 +41,11 @@ func (b *Backend) CheckAlarms() {
 	} else {
 		if b.DBConnectionAlarm == AlarmEnabled {
 			b.DBConnectionAlarm = AlarmACK
-			b.mon.handleAlarm(b.Name, "DBConnection")
+			b.mon.handleAlarm(b.Name, "DBConnection", t)
 		}
 	}
 
-	b.Server.CheckAlarms()
+	b.Server.CheckAlarms(t)
 }
 
 // Available returns true if the backend server is considered available, that is,

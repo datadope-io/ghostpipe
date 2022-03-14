@@ -10,9 +10,9 @@ type fakeMonSys struct {
 	Alarms []string
 }
 
-func (m *fakeMonSys) handleAlarm(server string, alarm string) {
+func (m *fakeMonSys) handleAlarm(server string, alarm string, time float64) {
 	m.Lock()
 	defer m.Unlock()
 	// Get time in unix epoch format
-	m.Alarms = append(m.Alarms, fmt.Sprintf("%s,%s", server, alarm))
+	m.Alarms = append(m.Alarms, fmt.Sprintf("%.0f,%s,%s", time, server, alarm))
 }

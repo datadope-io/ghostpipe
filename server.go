@@ -1,9 +1,9 @@
 package main
 
 import (
-	"context"
 	"math/rand"
-	"time"
+
+	"github.com/fschuetz04/simgo"
 )
 
 // Server represents a server with its possible alarms.
@@ -21,52 +21,39 @@ type Server struct {
 
 type MonitoredServer interface {
 	GetName() string
-	CheckAlarms()
+	CheckAlarms(float64)
 }
 
-func Run(ctx context.Context, m MonitoredServer) {
-	//fmt.Printf("Starting %s\n", m.GetName())
-
-	// Timer with AlarmCheckInterval
-	t := time.NewTicker(AlarmCheckInterval)
-
+func Run(proc simgo.Process, m MonitoredServer) {
 	// Add a random delay before starting the loop, between 0 and AlarmCheckInterval
-	time.Sleep(time.Duration(rand.Intn(int(AlarmCheckInterval.Seconds()))) * time.Second)
+	proc.Wait(proc.Timeout(float64(rand.Intn(AlarmCheckInterval))))
 
 	for {
-		// Each tick run the CheckAlarms function.
-		// Finish the loop if the context is done.
-		select {
-		case <-t.C:
-			m.CheckAlarms()
-		case <-ctx.Done():
-			//fmt.Printf("Stopping %s\n", m.GetName())
-			t.Stop()
-			return
-		}
+		m.CheckAlarms(proc.Now())
+		proc.Wait(proc.Timeout(AlarmCheckInterval))
 	}
 }
 
 // CheckAlarms if the server has alarms and print a message for each triggered alarm
-func (s *Server) CheckAlarms() {
+func (s *Server) CheckAlarms(t float64) {
 	if s.CPUAlarm == AlarmTriggered {
 		s.CPUAlarm = AlarmACK
-		s.mon.handleAlarm(s.Name, "CPU")
+		s.mon.handleAlarm(s.Name, "CPU", t)
 	}
 
 	if s.MemoryAlarm == AlarmTriggered {
 		s.MemoryAlarm = AlarmACK
-		s.mon.handleAlarm(s.Name, "Memory")
+		s.mon.handleAlarm(s.Name, "Memory", t)
 	}
 
 	if s.DiskAlarm == AlarmTriggered {
 		s.DiskAlarm = AlarmACK
-		s.mon.handleAlarm(s.Name, "Disk")
+		s.mon.handleAlarm(s.Name, "Disk", t)
 	}
 
 	if s.PingAlarm == AlarmTriggered {
 		s.PingAlarm = AlarmACK
-		s.mon.handleAlarm(s.Name, "Ping")
+		s.mon.handleAlarm(s.Name, "Ping", t)
 	}
 }
 

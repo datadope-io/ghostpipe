@@ -14,7 +14,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"time"
+
+	"github.com/fschuetz04/simgo"
 )
 
 // AlarmStatus is an enum for the status of an alarm
@@ -29,7 +30,7 @@ const (
 	AlarmACK
 
 	// AlarmCheckInterval is the time interval when alarms are checked
-	AlarmCheckInterval = 2 * time.Second
+	AlarmCheckInterval = 60
 )
 
 // Create flags to define graph and events output files
@@ -90,18 +91,53 @@ func main() {
 	_ = frontendC3
 	_ = frontendD1
 
+	// Disconnect db1 each 200' and reconnect it after 60'
+	a.AddMonkey(func(proc simgo.Process) {
+		proc.Wait(proc.Timeout(200))
+		for {
+			fmt.Println("monkey: disconnect db1")
+			db1.PingAlarm = AlarmTriggered
+
+			proc.Wait(proc.Timeout(60))
+			fmt.Println("monkey: reconnect db1")
+			db1.PingAlarm = AlarmEnabled
+
+			proc.Wait(proc.Timeout(140))
+		}
+	})
+
+	// Disconnect backendD each 400' and reconnect it after 60'
+	a.AddMonkey(func(proc simgo.Process) {
+		proc.Wait(proc.Timeout(400))
+		for {
+			fmt.Println("monkey: disconnect backendD")
+			backendD.PingAlarm = AlarmTriggered
+
+			proc.Wait(proc.Timeout(60))
+			fmt.Println("monkey: reconnect backendD")
+			backendD.PingAlarm = AlarmEnabled
+
+			proc.Wait(proc.Timeout(340))
+		}
+	})
+
 	// Start the simulation.
 	fmt.Println("Starting simulator...")
-	go a.Start()
-
-	time.Sleep(2 * time.Second)
-	fmt.Println("db1 down")
-	db1.PingAlarm = AlarmTriggered
-
-	time.Sleep(8 * time.Second)
-
+	// The parameter is the function able to trigger alarms
+	simulation_duration := 60.0 * 10
+	a.Start(simulation_duration)
 	fmt.Println("Stopping simulator...")
-	a.Stop()
+
+	/*
+		time.Sleep(2 * time.Second)
+		fmt.Println("db1 down")
+		db1.PingAlarm = AlarmTriggered
+
+		time.Sleep(8 * time.Second)
+
+		fmt.Println("Stopping simulator...")
+		a.Stop()
+	*/
 	/*
 		time.Sleep(2 * time.Second)
 

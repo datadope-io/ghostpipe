@@ -1,10 +1,10 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
-	"sync"
+
+	"github.com/fschuetz04/simgo"
 )
 
 // Architecture store the different servers of our application
@@ -12,14 +12,14 @@ type Architecture struct {
 	DBs       []*Database
 	Backends  []*Backend
 	Frontends []*Frontend
+	// Monkeys are functions that will "sabotage" the architecture, triggering alarms
+	Monkeys []func(simgo.Process)
 
 	// mon connection to the monitoring system
 	mon MonitorSystem
 
-	// ctx context to signal servers to stop
-	ctxCancel context.CancelFunc
-
-	wg sync.WaitGroup
+	// sim is the simulation object to use a fake time and make the simulation instant
+	sim *simgo.Simulation
 }
 
 // CytoscapeGraph is the JSON representation of the architecture in the Cytoscape JSON format
@@ -55,39 +55,26 @@ type CSEdgeData struct {
 }
 
 // Run start the monitoring of each server
-func (a *Architecture) Start() {
-	ctx, cancel := context.WithCancel(context.Background())
-	a.ctxCancel = cancel
+func (a *Architecture) Start(sim_duration float64) {
+	a.sim = &simgo.Simulation{}
 
 	for _, db := range a.DBs {
-		go func(d *Database) {
-			a.wg.Add(1)
-			defer a.wg.Done()
-			Run(ctx, d)
-		}(db)
+		a.sim.ProcessReflect(Run, db)
 	}
 
 	for _, backend := range a.Backends {
-		go func(b *Backend) {
-			a.wg.Add(1)
-			defer a.wg.Done()
-			Run(ctx, b)
-		}(backend)
+		a.sim.ProcessReflect(Run, backend)
 	}
 
 	for _, frontend := range a.Frontends {
-		go func(f *Frontend) {
-			a.wg.Add(1)
-			defer a.wg.Done()
-			Run(ctx, f)
-		}(frontend)
+		a.sim.ProcessReflect(Run, frontend)
 	}
-}
 
-// Stop signal all servers to stop and wait for them to stop
-func (a *Architecture) Stop() {
-	a.ctxCancel()
-	a.wg.Wait()
+	for _, monkey := range a.Monkeys {
+		a.sim.Process(monkey)
+	}
+
+	a.sim.RunUntil(sim_duration)
 }
 
 func (a *Architecture) NewDatabase(name string) *Database {
@@ -118,6 +105,10 @@ func (a *Architecture) AddBackend(backend *Backend) {
 
 func (a *Architecture) AddFrontend(frontend *Frontend) {
 	a.Frontends = append(a.Frontends, frontend)
+}
+
+func (a *Architecture) AddMonkey(monkey func(simgo.Process)) {
+	a.Monkeys = append(a.Monkeys, monkey)
 }
 
 // CytoscapeGraph return a JSON representation of the architecture in the

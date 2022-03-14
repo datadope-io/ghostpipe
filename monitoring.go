@@ -3,11 +3,10 @@ package main
 import (
 	"fmt"
 	"sync"
-	"time"
 )
 
 type MonitorSystem interface {
-	handleAlarm(string, string)
+	handleAlarm(string, string, float64)
 }
 
 // MoMonitorSystem receive the alarms of the servers and generate messages
@@ -15,10 +14,9 @@ type PrinterMonitorSystem struct {
 	sync.Mutex
 }
 
-func (m *PrinterMonitorSystem) handleAlarm(server string, alarm string) {
+func (m *PrinterMonitorSystem) handleAlarm(server string, alarm string, time float64) {
 	m.Lock()
 	defer m.Unlock()
 	// Get time in unix epoch format
-	now := time.Now().Unix()
-	fmt.Printf("%d,%s,%s\n", now, server, alarm)
+	fmt.Printf("%.0f,%s,%s\n", time, server, alarm)
 }

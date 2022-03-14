@@ -22,13 +22,13 @@ func (d *Database) GetName() string {
 
 // CheckAlarms print a message if the database engines is not working
 // or the base server has alarms.
-func (d *Database) CheckAlarms() {
+func (d *Database) CheckAlarms(t float64) {
 	if d.DBEngineAlarm == AlarmTriggered {
 		d.DBEngineAlarm = AlarmACK
-		d.mon.handleAlarm(d.Name, "DBEngine")
+		d.mon.handleAlarm(d.Name, "DBEngine", t)
 	}
 
-	d.Server.CheckAlarms()
+	d.Server.CheckAlarms(t)
 }
 
 // Available return true if the db server is considered available, that is,
