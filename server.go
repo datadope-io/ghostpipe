@@ -24,13 +24,16 @@ type MonitoredServer interface {
 	CheckAlarms(float64)
 }
 
+// Run check the alarms of each server each interval
 func Run(proc simgo.Process, m MonitoredServer) {
-	// Add a random delay before starting the loop, between 0 and AlarmCheckInterval
+	// Desalign the time of checking for each server
 	proc.Wait(proc.Timeout(float64(rand.Intn(AlarmCheckInterval))))
 
 	for {
 		m.CheckAlarms(proc.Now())
 		proc.Wait(proc.Timeout(AlarmCheckInterval))
+		// Execution jitter
+		proc.Wait(proc.Timeout(float64(rand.Intn(IntervalJitter * AlarmCheckInterval))))
 	}
 }
 

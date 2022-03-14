@@ -31,6 +31,10 @@ const (
 
 	// AlarmCheckInterval is the time interval when alarms are checked
 	AlarmCheckInterval = 60
+
+	// IntervalJitter is the max possible jitter for the interval expressed
+	// as a percentage of AlarmCheckInterval
+	IntervalJitter = 0.1
 )
 
 // Create flags to define graph and events output files
@@ -95,29 +99,29 @@ func main() {
 	a.AddMonkey(func(proc simgo.Process) {
 		proc.Wait(proc.Timeout(200))
 		for {
-			fmt.Println("monkey: disconnect db1")
+			fmt.Println("\nmonkey: disconnect db1")
 			db1.PingAlarm = AlarmTriggered
 
 			proc.Wait(proc.Timeout(60))
-			fmt.Println("monkey: reconnect db1")
+			//fmt.Println("\nmonkey: reconnect db1")
 			db1.PingAlarm = AlarmEnabled
 
 			proc.Wait(proc.Timeout(140))
 		}
 	})
 
-	// Disconnect backendD each 400' and reconnect it after 60'
+	// Disconnect backendD each 380' and reconnect it after 60'
 	a.AddMonkey(func(proc simgo.Process) {
-		proc.Wait(proc.Timeout(400))
+		proc.Wait(proc.Timeout(380))
 		for {
-			fmt.Println("monkey: disconnect backendD")
+			fmt.Println("\nmonkey: disconnect backendD")
 			backendD.PingAlarm = AlarmTriggered
 
 			proc.Wait(proc.Timeout(60))
-			fmt.Println("monkey: reconnect backendD")
+			//fmt.Println("monkey: reconnect backendD")
 			backendD.PingAlarm = AlarmEnabled
 
-			proc.Wait(proc.Timeout(340))
+			proc.Wait(proc.Timeout(320))
 		}
 	})
 

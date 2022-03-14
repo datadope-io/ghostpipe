@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
+	"time"
 
 	"github.com/fschuetz04/simgo"
 )
@@ -57,6 +59,13 @@ type CSEdgeData struct {
 // Run start the monitoring of each server
 func (a *Architecture) Start(sim_duration float64) {
 	a.sim = &simgo.Simulation{}
+
+	// Shuffle the servers to start in random order
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(a.DBs), func(i, j int) { a.DBs[i], a.DBs[j] = a.DBs[j], a.DBs[i] })
+	rand.Shuffle(len(a.Backends), func(i, j int) { a.Backends[i], a.Backends[j] = a.Backends[j], a.Backends[i] })
+	rand.Shuffle(len(a.Frontends), func(i, j int) { a.Frontends[i], a.Frontends[j] = a.Frontends[j], a.Frontends[i] })
+	rand.Shuffle(len(a.Monkeys), func(i, j int) { a.Monkeys[i], a.Monkeys[j] = a.Monkeys[j], a.Monkeys[i] })
 
 	for _, db := range a.DBs {
 		a.sim.ProcessReflect(Run, db)
