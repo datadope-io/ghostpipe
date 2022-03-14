@@ -47,3 +47,42 @@ Starting simulator...
 
 Stopping simulator...
 ```
+
+## Architecture
+
+Each server have alarms and it is considered available based on some rule based on those alarms.
+
+The alarms in ``Server`` are inherited for the rest of servers.
+
+### Server (base)
+
+| Alarms | Availability | Notes |
+|-----|--|--|
+| CPU | | |
+| Memory | | |
+| Disk | | |
+| Ping | X | |
+
+### Database
+
+| Alarms | Availability | Notes |
+|-----|--|--|
+| DBEngine | X | Availability take into account also Server.Ping |
+
+### Backend
+
+All backends should be connected to one database.
+
+| Alarms | Availability | Notes |
+|-----|--|--|
+| Proc | X | Availability take into account also Server.Ping |
+| DBConnection | | Its triggered if the connected DB is not available |
+
+### Frontend
+
+All frontends should be connected to one backend.
+
+| Alarms | Availability | Notes |
+|-----|--|--|
+| Proc | X | Availability take into account also Server.Ping |
+| BackendConnection | | Its triggered if the connected backend is not available |
