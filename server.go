@@ -24,6 +24,17 @@ type MonitoredServer interface {
 	CheckAlarms(float64)
 }
 
+func NewServer(name string, mon MonitorSystem) *Server {
+	return &Server{
+		Name: name,
+		mon:  mon,
+	}
+}
+
+func (d *Server) GetName() string {
+	return d.Name
+}
+
 // Run check the alarms of each server each interval
 func Run(proc simgo.Process, m MonitoredServer) {
 	// Desalign the time of checking for each server

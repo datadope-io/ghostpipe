@@ -11,6 +11,7 @@ import (
 
 // Architecture store the different servers of our application
 type Architecture struct {
+	Servers   []*Server
 	DBs       []*Database
 	Backends  []*Backend
 	Frontends []*Frontend
@@ -62,10 +63,15 @@ func (a *Architecture) Start(sim_duration float64) {
 
 	// Shuffle the servers to start in random order
 	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(a.Servers), func(i, j int) { a.Servers[i], a.Servers[j] = a.Servers[j], a.Servers[i] })
 	rand.Shuffle(len(a.DBs), func(i, j int) { a.DBs[i], a.DBs[j] = a.DBs[j], a.DBs[i] })
 	rand.Shuffle(len(a.Backends), func(i, j int) { a.Backends[i], a.Backends[j] = a.Backends[j], a.Backends[i] })
 	rand.Shuffle(len(a.Frontends), func(i, j int) { a.Frontends[i], a.Frontends[j] = a.Frontends[j], a.Frontends[i] })
 	rand.Shuffle(len(a.Monkeys), func(i, j int) { a.Monkeys[i], a.Monkeys[j] = a.Monkeys[j], a.Monkeys[i] })
+
+	for _, server := range a.Servers {
+		a.sim.ProcessReflect(Run, server)
+	}
 
 	for _, db := range a.DBs {
 		a.sim.ProcessReflect(Run, db)
@@ -86,6 +92,12 @@ func (a *Architecture) Start(sim_duration float64) {
 	a.sim.RunUntil(sim_duration)
 }
 
+func (a *Architecture) NewServer(name string) *Server {
+	s := NewServer(name, a.mon)
+	a.AddServer(s)
+	return s
+}
+
 func (a *Architecture) NewDatabase(name string) *Database {
 	d := NewDatabase(name, a.mon)
 	a.AddDB(d)
@@ -102,6 +114,10 @@ func (a *Architecture) NewFrontend(name string, backend *Backend) *Frontend {
 	f := NewFrontend(name, backend, a.mon)
 	a.AddFrontend(f)
 	return f
+}
+
+func (a *Architecture) AddServer(server *Server) {
+	a.Servers = append(a.Servers, server)
 }
 
 func (a *Architecture) AddDB(db *Database) {

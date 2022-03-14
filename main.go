@@ -13,6 +13,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"math/rand"
 	"os"
 
 	"github.com/fschuetz04/simgo"
@@ -75,6 +76,12 @@ func main() {
 	backendD := a.NewBackend("backendD", db2)
 	frontendD1 := a.NewFrontend("frontendD1", backendD)
 
+	// Several servers as noise
+	noiseServers := []*Server{}
+	for i := 0; i < 10; i++ {
+		noiseServers = append(noiseServers, a.NewServer("noise"+fmt.Sprintf("%d", i)))
+	}
+
 	fmt.Printf("Writing graph to %s\n", *graphFile)
 	g := a.CytoscapeGraph()
 	f, err := os.Create(*graphFile)
@@ -99,7 +106,7 @@ func main() {
 	a.AddMonkey(func(proc simgo.Process) {
 		proc.Wait(proc.Timeout(200))
 		for {
-			fmt.Println("\nmonkey: disconnect db1")
+			//fmt.Println("\nmonkey: disconnect db1")
 			db1.PingAlarm = AlarmTriggered
 
 			proc.Wait(proc.Timeout(60))
@@ -114,7 +121,7 @@ func main() {
 	a.AddMonkey(func(proc simgo.Process) {
 		proc.Wait(proc.Timeout(380))
 		for {
-			fmt.Println("\nmonkey: disconnect backendD")
+			//fmt.Println("\nmonkey: disconnect backendD")
 			backendD.PingAlarm = AlarmTriggered
 
 			proc.Wait(proc.Timeout(60))
@@ -122,6 +129,28 @@ func main() {
 			backendD.PingAlarm = AlarmEnabled
 
 			proc.Wait(proc.Timeout(320))
+		}
+	})
+
+	// Generate alarm noise
+	a.AddMonkey(func(proc simgo.Process) {
+		for {
+			// Get one of the noise servers
+			noiseServer := noiseServers[rand.Intn(len(noiseServers))]
+
+			// Trigger one the alarms of the server
+			switch rand.Intn(4) {
+			case 0:
+				noiseServer.CPUAlarm = AlarmTriggered
+			case 1:
+				noiseServer.MemoryAlarm = AlarmTriggered
+			case 2:
+				noiseServer.DiskAlarm = AlarmTriggered
+			case 3:
+				noiseServer.PingAlarm = AlarmTriggered
+			}
+
+			proc.Wait(proc.Timeout(60))
 		}
 	})
 
