@@ -31,11 +31,11 @@ const (
 	AlarmACK
 
 	// AlarmCheckInterval is the time interval when alarms are checked
-	AlarmCheckInterval = 60
+	AlarmCheckInterval = 1
 
 	// IntervalJitter is the max possible jitter for the interval expressed
 	// as a percentage of AlarmCheckInterval
-	IntervalJitter = 0.1
+	IntervalJitter = 0.2
 )
 
 // Create flags to define graph and events output files
@@ -78,11 +78,11 @@ func main() {
 
 	// Several servers as noise
 	noiseServers := []*Server{}
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 25; i++ {
 		noiseServers = append(noiseServers, a.NewServer("noise"+fmt.Sprintf("%d", i)))
 	}
 
-	fmt.Printf("Writing graph to %s\n", *graphFile)
+	// fmt.Printf("Writing graph to %s\n", *graphFile)
 	g := a.CytoscapeGraph()
 	f, err := os.Create(*graphFile)
 	if err != nil {
@@ -102,33 +102,33 @@ func main() {
 	_ = frontendC3
 	_ = frontendD1
 
-	// Disconnect db1 each 200' and reconnect it after 60'
+	// Disconnect db1 each 60' and reconnect it after 5'
 	a.AddMonkey(func(proc simgo.Process) {
-		proc.Wait(proc.Timeout(200))
+		proc.Wait(proc.Timeout(60))
 		for {
-			//fmt.Println("\nmonkey: disconnect db1")
+			// fmt.Println("\nmonkey: disconnect db1")
 			db1.PingAlarm = AlarmTriggered
 
-			proc.Wait(proc.Timeout(60))
-			//fmt.Println("\nmonkey: reconnect db1")
+			proc.Wait(proc.Timeout(5))
+			// fmt.Println("\nmonkey: reconnect db1")
 			db1.PingAlarm = AlarmEnabled
 
-			proc.Wait(proc.Timeout(140))
+			proc.Wait(proc.Timeout(55))
 		}
 	})
 
-	// Disconnect backendD each 380' and reconnect it after 60'
+	// Disconnect backendD each 720' and reconnect it after 60'
 	a.AddMonkey(func(proc simgo.Process) {
-		proc.Wait(proc.Timeout(380))
+		proc.Wait(proc.Timeout(720))
 		for {
-			//fmt.Println("\nmonkey: disconnect backendD")
+			// fmt.Println("\nmonkey: disconnect backendD")
 			backendD.PingAlarm = AlarmTriggered
 
 			proc.Wait(proc.Timeout(60))
-			//fmt.Println("monkey: reconnect backendD")
+			// fmt.Println("monkey: reconnect backendD")
 			backendD.PingAlarm = AlarmEnabled
 
-			proc.Wait(proc.Timeout(320))
+			proc.Wait(proc.Timeout(660))
 		}
 	})
 
@@ -150,13 +150,14 @@ func main() {
 				noiseServer.PingAlarm = AlarmTriggered
 			}
 
-			proc.Wait(proc.Timeout(60))
+			proc.Wait(proc.Timeout(1))
 		}
 	})
 
 	// Start the simulation.
-	fmt.Printf("Starting simulator...\n\n")
+	// fmt.Printf("Starting simulator...\n\n")
+	fmt.Println("time,server,alarm,eventid")
 
-	a.Start(60.0 * 10) // the parameter is the simulation time
-	fmt.Println("\nStopping simulator...")
+	a.Start(60.0 * 24 * 2) // the parameter is the simulation time
+	// fmt.Println("\nStopping simulator...")
 }

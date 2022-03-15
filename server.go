@@ -44,7 +44,7 @@ func Run(proc simgo.Process, m MonitoredServer) {
 		m.CheckAlarms(proc.Now())
 		proc.Wait(proc.Timeout(AlarmCheckInterval))
 		// Execution jitter
-		proc.Wait(proc.Timeout(float64(rand.Intn(IntervalJitter * AlarmCheckInterval))))
+		proc.Wait(proc.Timeout(AlarmCheckInterval * rand.Float64() * IntervalJitter))
 	}
 }
 

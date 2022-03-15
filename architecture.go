@@ -140,6 +140,7 @@ func (a *Architecture) AddMonkey(monkey func(simgo.Process)) {
 // cytoscape format
 func (a *Architecture) CytoscapeGraph() string {
 	nodes := []CSNode{}
+	edges := []CSEdge{}
 
 	for _, server := range a.Servers {
 		nodes = append(nodes, CSNode{
@@ -149,6 +150,27 @@ func (a *Architecture) CytoscapeGraph() string {
 				Name:  server.Name,
 			},
 		})
+
+		// Add alarms nodes
+		for _, alarm := range []string{"CPU", "Memory", "Disk", "Ping"} {
+			id := fmt.Sprintf("%d", a.mon.generateEventID(server.Name, alarm))
+			nodes = append(nodes, CSNode{
+				Data: CSNodeData{
+					ID:    id,
+					Value: alarm,
+					Name:  alarm,
+				},
+			})
+
+			// Add edges from the server to the alarms
+			edges = append(edges, CSEdge{
+				Data: CSEdgeData{
+					Source: server.Name,
+					Target: id,
+				},
+			})
+		}
+
 	}
 
 	for _, db := range a.DBs {
@@ -159,6 +181,26 @@ func (a *Architecture) CytoscapeGraph() string {
 				Name:  db.Name,
 			},
 		})
+
+		// Add alarms nodes
+		for _, alarm := range []string{"CPU", "Memory", "Disk", "Ping", "DBEngine"} {
+			id := fmt.Sprintf("%d", a.mon.generateEventID(db.Name, alarm))
+			nodes = append(nodes, CSNode{
+				Data: CSNodeData{
+					ID:    id,
+					Value: alarm,
+					Name:  alarm,
+				},
+			})
+
+			// Add edges from the server to the alarms
+			edges = append(edges, CSEdge{
+				Data: CSEdgeData{
+					Source: db.Name,
+					Target: id,
+				},
+			})
+		}
 	}
 
 	for _, backend := range a.Backends {
@@ -169,6 +211,26 @@ func (a *Architecture) CytoscapeGraph() string {
 				Name:  backend.Name,
 			},
 		})
+
+		// Add alarms nodes
+		for _, alarm := range []string{"CPU", "Memory", "Disk", "Ping", "Proc", "DBConnection"} {
+			id := fmt.Sprintf("%d", a.mon.generateEventID(backend.Name, alarm))
+			nodes = append(nodes, CSNode{
+				Data: CSNodeData{
+					ID:    id,
+					Value: alarm,
+					Name:  alarm,
+				},
+			})
+
+			// Add edges from the server to the alarms
+			edges = append(edges, CSEdge{
+				Data: CSEdgeData{
+					Source: backend.Name,
+					Target: id,
+				},
+			})
+		}
 	}
 
 	for _, frontend := range a.Frontends {
@@ -179,10 +241,28 @@ func (a *Architecture) CytoscapeGraph() string {
 				Name:  frontend.Name,
 			},
 		})
+
+		// Add alarms nodes
+		for _, alarm := range []string{"CPU", "Memory", "Disk", "Ping", "Proc", "BackendConnection"} {
+			id := fmt.Sprintf("%d", a.mon.generateEventID(frontend.Name, alarm))
+			nodes = append(nodes, CSNode{
+				Data: CSNodeData{
+					ID:    id,
+					Value: alarm,
+					Name:  alarm,
+				},
+			})
+			// Add edges from the server to the alarms
+			edges = append(edges, CSEdge{
+				Data: CSEdgeData{
+					Source: frontend.Name,
+					Target: id,
+				},
+			})
+		}
 	}
 
-	edges := []CSEdge{}
-
+	// Add links between different servers
 	for _, backend := range a.Backends {
 		edges = append(edges, CSEdge{
 			Data: CSEdgeData{
