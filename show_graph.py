@@ -17,6 +17,8 @@ for node in G.copy().nodes():
     try:
         int(node)
         G.remove_node(node)
+        # Add attribute to the node, to be used later
+        G.nodes[node]['alarm'] = True
     except ValueError:
         pass
 
