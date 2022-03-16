@@ -39,9 +39,9 @@ type CSElements struct {
 }
 
 type CSNodeData struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-	Type string `json:"type"`
+	ID    string `json:"id"`
+	Value string `json:"value"`
+	Type  string `json:"type"`
 }
 
 type CSNode struct {
@@ -147,9 +147,9 @@ func (a *Architecture) CytoscapeGraph() string {
 	for _, server := range a.Servers {
 		nodes = append(nodes, CSNode{
 			Data: CSNodeData{
-				ID:   server.Name,
-				Name: server.Name,
-				Type: "server",
+				ID:    server.Name,
+				Value: server.Name,
+				Type:  "server",
 			},
 		})
 
@@ -158,9 +158,9 @@ func (a *Architecture) CytoscapeGraph() string {
 			id := fmt.Sprintf("%d", a.mon.generateEventID(server.Name, alarm))
 			nodes = append(nodes, CSNode{
 				Data: CSNodeData{
-					ID:   id,
-					Name: fmt.Sprintf("%s-%s", server.Name, alarm),
-					Type: "alarm",
+					ID:    id,
+					Value: fmt.Sprintf("%s-%s", server.Name, alarm),
+					Type:  "alarm",
 				},
 			})
 
@@ -179,9 +179,9 @@ func (a *Architecture) CytoscapeGraph() string {
 	for _, db := range a.DBs {
 		nodes = append(nodes, CSNode{
 			Data: CSNodeData{
-				ID:   db.Name,
-				Name: db.Name,
-				Type: "db",
+				ID:    db.Name,
+				Value: db.Name,
+				Type:  "db",
 			},
 		})
 
@@ -190,9 +190,9 @@ func (a *Architecture) CytoscapeGraph() string {
 			id := fmt.Sprintf("%d", a.mon.generateEventID(db.Name, alarm))
 			nodes = append(nodes, CSNode{
 				Data: CSNodeData{
-					ID:   id,
-					Name: fmt.Sprintf("%s-%s", db.Name, alarm),
-					Type: "alarm",
+					ID:    id,
+					Value: fmt.Sprintf("%s-%s", db.Name, alarm),
+					Type:  "alarm",
 				},
 			})
 
@@ -210,9 +210,9 @@ func (a *Architecture) CytoscapeGraph() string {
 	for _, backend := range a.Backends {
 		nodes = append(nodes, CSNode{
 			Data: CSNodeData{
-				ID:   backend.Name,
-				Name: backend.Name,
-				Type: "backend",
+				ID:    backend.Name,
+				Value: backend.Name,
+				Type:  "backend",
 			},
 		})
 
@@ -221,9 +221,9 @@ func (a *Architecture) CytoscapeGraph() string {
 			id := fmt.Sprintf("%d", a.mon.generateEventID(backend.Name, alarm))
 			nodes = append(nodes, CSNode{
 				Data: CSNodeData{
-					ID:   id,
-					Name: fmt.Sprintf("%s-%s", backend.Name, alarm),
-					Type: "alarm",
+					ID:    id,
+					Value: fmt.Sprintf("%s-%s", backend.Name, alarm),
+					Type:  "alarm",
 				},
 			})
 
@@ -241,9 +241,9 @@ func (a *Architecture) CytoscapeGraph() string {
 	for _, frontend := range a.Frontends {
 		nodes = append(nodes, CSNode{
 			Data: CSNodeData{
-				ID:   frontend.Name,
-				Name: frontend.Name,
-				Type: "frontend",
+				ID:    frontend.Name,
+				Value: frontend.Name,
+				Type:  "frontend",
 			},
 		})
 
@@ -252,9 +252,9 @@ func (a *Architecture) CytoscapeGraph() string {
 			id := fmt.Sprintf("%d", a.mon.generateEventID(frontend.Name, alarm))
 			nodes = append(nodes, CSNode{
 				Data: CSNodeData{
-					ID:   id,
-					Name: fmt.Sprintf("%s-%s", frontend.Name, alarm),
-					Type: "alarm",
+					ID:    id,
+					Value: fmt.Sprintf("%s-%s", frontend.Name, alarm),
+					Type:  "alarm",
 				},
 			})
 			// Add edges from the server to the alarms
