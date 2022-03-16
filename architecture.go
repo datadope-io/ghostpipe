@@ -159,7 +159,7 @@ func (a *Architecture) CytoscapeGraph() string {
 			nodes = append(nodes, CSNode{
 				Data: CSNodeData{
 					ID:   id,
-					Name: alarm,
+					Name: fmt.Sprintf("%s-%s", server.Name, alarm),
 					Type: "alarm",
 				},
 			})
@@ -190,7 +190,7 @@ func (a *Architecture) CytoscapeGraph() string {
 			nodes = append(nodes, CSNode{
 				Data: CSNodeData{
 					ID:   id,
-					Name: alarm,
+					Name: fmt.Sprintf("%s-%s", db.Name, alarm),
 					Type: "alarm",
 				},
 			})
@@ -220,7 +220,7 @@ func (a *Architecture) CytoscapeGraph() string {
 			nodes = append(nodes, CSNode{
 				Data: CSNodeData{
 					ID:   id,
-					Name: alarm,
+					Name: fmt.Sprintf("%s-%s", backend.Name, alarm),
 					Type: "alarm",
 				},
 			})
@@ -250,7 +250,7 @@ func (a *Architecture) CytoscapeGraph() string {
 			nodes = append(nodes, CSNode{
 				Data: CSNodeData{
 					ID:   id,
-					Name: alarm,
+					Name: fmt.Sprintf("%s-%s", frontend.Name, alarm),
 					Type: "alarm",
 				},
 			})
