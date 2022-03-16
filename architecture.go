@@ -53,10 +53,10 @@ type CSEdge struct {
 }
 
 type CSEdgeData struct {
-	Source string `json:"source"`
-	Target string `json:"target"`
-	// TODO añadir un type a los edges
-	Epq float64 `json:"epq"`
+	Source string  `json:"source"`
+	Target string  `json:"target"`
+	Type   string  `json:"type"`
+	Epq    float64 `json:"epq"`
 }
 
 // Run start the monitoring of each server
@@ -169,6 +169,7 @@ func (a *Architecture) CytoscapeGraph() string {
 				Data: CSEdgeData{
 					Source: server.Name,
 					Target: id,
+					Type:   "trigger",
 				},
 			})
 		}
@@ -200,6 +201,7 @@ func (a *Architecture) CytoscapeGraph() string {
 				Data: CSEdgeData{
 					Source: db.Name,
 					Target: id,
+					Type:   "trigger",
 				},
 			})
 		}
@@ -230,6 +232,7 @@ func (a *Architecture) CytoscapeGraph() string {
 				Data: CSEdgeData{
 					Source: backend.Name,
 					Target: id,
+					Type:   "trigger",
 				},
 			})
 		}
@@ -259,6 +262,7 @@ func (a *Architecture) CytoscapeGraph() string {
 				Data: CSEdgeData{
 					Source: frontend.Name,
 					Target: id,
+					Type:   "trigger",
 				},
 			})
 		}
@@ -270,6 +274,7 @@ func (a *Architecture) CytoscapeGraph() string {
 			Data: CSEdgeData{
 				Source: backend.Name,
 				Target: backend.DBEngine.Name,
+				Type:   "connect",
 			},
 		})
 	}
@@ -279,6 +284,7 @@ func (a *Architecture) CytoscapeGraph() string {
 			Data: CSEdgeData{
 				Source: frontend.Name,
 				Target: frontend.Backend.Name,
+				Type:   "connect",
 			},
 		})
 	}
