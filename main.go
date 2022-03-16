@@ -82,14 +82,15 @@ func main() {
 		noiseServers = append(noiseServers, a.NewServer("noise"+fmt.Sprintf("%d", i)))
 	}
 
-	// fmt.Printf("Writing graph to %s\n", *graphFile)
 	g := a.CytoscapeGraph()
-	f, err := os.Create(*graphFile)
+	gFile, err := os.Create(*graphFile)
 	if err != nil {
 		panic(err)
 	}
+	defer gFile.Close()
 
-	_, err = f.WriteString(g)
+	fmt.Printf("Writing graph to %s\n", *graphFile)
+	_, err = gFile.WriteString(g)
 	if err != nil {
 		panic(err)
 	}
@@ -155,9 +156,13 @@ func main() {
 	})
 
 	// Start the simulation.
-	// fmt.Printf("Starting simulator...\n\n")
-	fmt.Println("time,server,alarm,eventid")
+	fmt.Println("Starting simulator...")
 
-	a.Start(60.0 * 24 * 2) // the parameter is the simulation time
-	// fmt.Println("\nStopping simulator...")
+	// Run the simulation for this long
+	a.Start(60.0 * 24 * 2)
+	fmt.Println("Simulator finished")
+
+	// Write generated events to file
+	fmt.Printf("Writing events to file %s\n", *eventsFile)
+	mon.WriteEvents(*eventsFile)
 }
