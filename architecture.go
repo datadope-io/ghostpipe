@@ -72,7 +72,7 @@ type CSEdgeData struct {
 	Source string   `json:"source"`
 	Target string   `json:"target"`
 	Type   EdgeType `json:"type"`
-	Epq    float64  `json:"epq"`
+	Weight float64  `json:"weight"`
 }
 
 // Run start the monitoring of each server
