@@ -78,7 +78,7 @@ func main() {
 
 	// Several servers as noise
 	noiseServers := []*Server{}
-	for i := 0; i < 25; i++ {
+	for i := 0; i < 500; i++ {
 		noiseServers = append(noiseServers, a.NewServer("noise"+fmt.Sprintf("%d", i)))
 	}
 
@@ -117,9 +117,9 @@ func main() {
 		}
 	})
 
-	// Disconnect backendD each 720' and reconnect it after 60'
+	// Disconnect backendD each 120' and reconnect it after 60'
 	a.AddMonkey(func(proc simgo.Process) {
-		proc.Wait(proc.Timeout(720))
+		proc.Wait(proc.Timeout(120))
 		for {
 			// fmt.Println("\nmonkey: disconnect backendD")
 			backendD.PingAlarm = AlarmTriggered
@@ -128,7 +128,7 @@ func main() {
 			// fmt.Println("monkey: reconnect backendD")
 			backendD.PingAlarm = AlarmEnabled
 
-			proc.Wait(proc.Timeout(660))
+			proc.Wait(proc.Timeout(60))
 		}
 	})
 
