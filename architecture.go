@@ -9,6 +9,22 @@ import (
 	"github.com/fschuetz04/simgo"
 )
 
+type (
+	NodeType string
+	EdgeType string
+)
+
+const (
+	ServerNode   NodeType = "server"
+	DBNode       NodeType = "db"
+	BackendNode  NodeType = "backend"
+	FrontendNode NodeType = "frontend"
+	AlarmNode    NodeType = "alarm"
+
+	TriggerEdge EdgeType = "trigger"
+	ConnectEdge EdgeType = "connect"
+)
+
 // Architecture store the different servers of our application
 type Architecture struct {
 	Servers   []*Server
@@ -39,9 +55,9 @@ type CSElements struct {
 }
 
 type CSNodeData struct {
-	Value string `json:"value"`
-	Name  string `json:"name"`
-	Type  string `json:"type"`
+	Value string   `json:"value"`
+	Name  string   `json:"name"`
+	Type  NodeType `json:"type"`
 }
 
 type CSNode struct {
@@ -53,10 +69,10 @@ type CSEdge struct {
 }
 
 type CSEdgeData struct {
-	Source string  `json:"source"`
-	Target string  `json:"target"`
-	Type   string  `json:"type"`
-	Epq    float64 `json:"epq"`
+	Source string   `json:"source"`
+	Target string   `json:"target"`
+	Type   EdgeType `json:"type"`
+	Epq    float64  `json:"epq"`
 }
 
 // Run start the monitoring of each server
@@ -149,7 +165,7 @@ func (a *Architecture) CytoscapeGraph() string {
 			Data: CSNodeData{
 				Value: server.Name,
 				Name:  server.Name,
-				Type:  "server",
+				Type:  ServerNode,
 			},
 		})
 
@@ -160,7 +176,7 @@ func (a *Architecture) CytoscapeGraph() string {
 				Data: CSNodeData{
 					Value: id,
 					Name:  fmt.Sprintf("%s-%s", server.Name, alarm),
-					Type:  "alarm",
+					Type:  AlarmNode,
 				},
 			})
 
@@ -169,7 +185,7 @@ func (a *Architecture) CytoscapeGraph() string {
 				Data: CSEdgeData{
 					Source: server.Name,
 					Target: id,
-					Type:   "trigger",
+					Type:   TriggerEdge,
 				},
 			})
 		}
@@ -181,7 +197,7 @@ func (a *Architecture) CytoscapeGraph() string {
 			Data: CSNodeData{
 				Value: db.Name,
 				Name:  db.Name,
-				Type:  "db",
+				Type:  DBNode,
 			},
 		})
 
@@ -192,7 +208,7 @@ func (a *Architecture) CytoscapeGraph() string {
 				Data: CSNodeData{
 					Value: id,
 					Name:  fmt.Sprintf("%s-%s", db.Name, alarm),
-					Type:  "alarm",
+					Type:  AlarmNode,
 				},
 			})
 
@@ -201,7 +217,7 @@ func (a *Architecture) CytoscapeGraph() string {
 				Data: CSEdgeData{
 					Source: db.Name,
 					Target: id,
-					Type:   "trigger",
+					Type:   TriggerEdge,
 				},
 			})
 		}
@@ -212,7 +228,7 @@ func (a *Architecture) CytoscapeGraph() string {
 			Data: CSNodeData{
 				Value: backend.Name,
 				Name:  backend.Name,
-				Type:  "backend",
+				Type:  BackendNode,
 			},
 		})
 
@@ -223,7 +239,7 @@ func (a *Architecture) CytoscapeGraph() string {
 				Data: CSNodeData{
 					Value: id,
 					Name:  fmt.Sprintf("%s-%s", backend.Name, alarm),
-					Type:  "alarm",
+					Type:  AlarmNode,
 				},
 			})
 
@@ -232,7 +248,7 @@ func (a *Architecture) CytoscapeGraph() string {
 				Data: CSEdgeData{
 					Source: backend.Name,
 					Target: id,
-					Type:   "trigger",
+					Type:   TriggerEdge,
 				},
 			})
 		}
@@ -243,7 +259,7 @@ func (a *Architecture) CytoscapeGraph() string {
 			Data: CSNodeData{
 				Value: frontend.Name,
 				Name:  frontend.Name,
-				Type:  "frontend",
+				Type:  FrontendNode,
 			},
 		})
 
@@ -254,7 +270,7 @@ func (a *Architecture) CytoscapeGraph() string {
 				Data: CSNodeData{
 					Value: id,
 					Name:  fmt.Sprintf("%s-%s", frontend.Name, alarm),
-					Type:  "alarm",
+					Type:  AlarmNode,
 				},
 			})
 			// Add edges from the server to the alarms
@@ -262,7 +278,7 @@ func (a *Architecture) CytoscapeGraph() string {
 				Data: CSEdgeData{
 					Source: frontend.Name,
 					Target: id,
-					Type:   "trigger",
+					Type:   TriggerEdge,
 				},
 			})
 		}
@@ -274,7 +290,7 @@ func (a *Architecture) CytoscapeGraph() string {
 			Data: CSEdgeData{
 				Source: backend.Name,
 				Target: backend.DBEngine.Name,
-				Type:   "connect",
+				Type:   ConnectEdge,
 			},
 		})
 	}
@@ -284,7 +300,7 @@ func (a *Architecture) CytoscapeGraph() string {
 			Data: CSEdgeData{
 				Source: frontend.Name,
 				Target: frontend.Backend.Name,
-				Type:   "connect",
+				Type:   ConnectEdge,
 			},
 		})
 	}
