@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -334,95 +333,4 @@ func TestGraphML(t *testing.T) {
 	}
 
 	assert.Equal(t, expectedXML, buf.String())
-}
-
-func TestCytoscapeGraph(t *testing.T) {
-	mon := &fakeMonSys{}
-
-	a := Architecture{mon: mon}
-
-	srv1 := &Server{Name: "srv1"}
-	db1 := &Database{Server: Server{Name: "db1", mon: mon}}
-	backend1 := &Backend{Server: Server{Name: "backend1", mon: mon}, DBEngine: db1}
-	frontend1 := &Frontend{Server: Server{Name: "frontend1", mon: mon}, Backend: backend1}
-
-	a.AddServer(srv1)
-	a.AddDB(db1)
-	a.AddBackend(backend1)
-	a.AddFrontend(frontend1)
-
-	expectedJSON := `
-{
-	"data":[],
-	"directed":true,
-	"multigraph":false,
-	"elements": {
-		"nodes":[
-			{"data":{"value":"srv1","name":"srv1","type":"server"}},
-			{"data":{"value":"101","name":"srv1-CPU","type":"alarm"}},
-			{"data":{"value":"102","name":"srv1-Memory","type":"alarm"}},
-			{"data":{"value":"103","name":"srv1-Disk","type":"alarm"}},
-			{"data":{"value":"104","name":"srv1-Ping","type":"alarm"}},
-
-			{"data":{"value":"db1","name":"db1","type":"db"}},
-			{"data":{"value":"201","name":"db1-CPU","type":"alarm"}},
-			{"data":{"value":"202","name":"db1-Memory","type":"alarm"}},
-			{"data":{"value":"203","name":"db1-Disk","type":"alarm"}},
-			{"data":{"value":"204","name":"db1-Ping","type":"alarm"}},
-			{"data":{"value":"205","name":"db1-DBEngine","type":"alarm"}},
-
-			{"data":{"value":"backend1","name":"backend1","type":"backend"}},
-			{"data":{"value":"301","name":"backend1-CPU","type":"alarm"}},
-			{"data":{"value":"302","name":"backend1-Memory","type":"alarm"}},
-			{"data":{"value":"303","name":"backend1-Disk","type":"alarm"}},
-			{"data":{"value":"304","name":"backend1-Ping","type":"alarm"}},
-			{"data":{"value":"306","name":"backend1-Proc","type":"alarm"}},
-			{"data":{"value":"307","name":"backend1-DBConnection","type":"alarm"}},
-
-			{"data":{"value":"frontend1","name":"frontend1","type":"frontend"}},
-			{"data":{"value":"401","name":"frontend1-CPU","type":"alarm"}},
-			{"data":{"value":"402","name":"frontend1-Memory","type":"alarm"}},
-			{"data":{"value":"403","name":"frontend1-Disk","type":"alarm"}},
-			{"data":{"value":"404","name":"frontend1-Ping","type":"alarm"}},
-			{"data":{"value":"406","name":"frontend1-Proc","type":"alarm"}},
-			{"data":{"value":"408","name":"frontend1-BackendConnection","type":"alarm"}}
-		],
-		"edges":[
-			{"data":{"source":"srv1","target":"101","type":"trigger","weight":0}},
-			{"data":{"source":"srv1","target":"102","type":"trigger","weight":0}},
-			{"data":{"source":"srv1","target":"103","type":"trigger","weight":0}},
-			{"data":{"source":"srv1","target":"104","type":"trigger","weight":0}},
-
-			{"data":{"source":"db1","target":"201","type":"trigger","weight":0}},
-			{"data":{"source":"db1","target":"202","type":"trigger","weight":0}},
-			{"data":{"source":"db1","target":"203","type":"trigger","weight":0}},
-			{"data":{"source":"db1","target":"204","type":"trigger","weight":0}},
-			{"data":{"source":"db1","target":"205","type":"trigger","weight":0}},
-
-			{"data":{"source":"backend1","target":"301","type":"trigger","weight":0}},
-			{"data":{"source":"backend1","target":"302","type":"trigger","weight":0}},
-			{"data":{"source":"backend1","target":"303","type":"trigger","weight":0}},
-			{"data":{"source":"backend1","target":"304","type":"trigger","weight":0}},
-			{"data":{"source":"backend1","target":"306","type":"trigger","weight":0}},
-			{"data":{"source":"backend1","target":"307","type":"trigger","weight":0}},
-
-			{"data":{"source":"frontend1","target":"401","type":"trigger","weight":0}},
-			{"data":{"source":"frontend1","target":"402","type":"trigger","weight":0}},
-			{"data":{"source":"frontend1","target":"403","type":"trigger","weight":0}},
-			{"data":{"source":"frontend1","target":"404","type":"trigger","weight":0}},
-			{"data":{"source":"frontend1","target":"406","type":"trigger","weight":0}},
-			{"data":{"source":"frontend1","target":"408","type":"trigger","weight":0}},
-
-			{"data":{"source":"backend1","target":"db1","type":"connect","weight":0}},
-			{"data":{"source":"frontend1","target":"backend1","type":"connect","weight":0}}
-		]
-	}
-}
-`
-	// Convert to one line format
-	expectedJSON = strings.Replace(expectedJSON, "\n", "", -1)
-	expectedJSON = strings.Replace(expectedJSON, "\t", "", -1)
-	expectedJSON = strings.Replace(expectedJSON, " ", "", -1)
-
-	assert.Equal(t, strings.Replace(expectedJSON, "\n", "", -1), a.CytoscapeGraph())
 }

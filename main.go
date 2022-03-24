@@ -37,9 +37,8 @@ const (
 
 // Create flags to define graph and events output files
 var (
-	cytoscapeGraphFile = flag.String("cytoscape", "", "File to save the graph in Cytoscape JSON format")
-	graphMLFile        = flag.String("graphml", "graph.graphml", "File to save the graph in GraphML format")
-	eventsFile         = flag.String("events", "events.csv", "File to save the events in CSV format")
+	graphMLFile = flag.String("graphml", "graph.graphml", "File to save the graph in GraphML format")
+	eventsFile  = flag.String("events", "events.csv", "File to save the events in CSV format")
 )
 
 func main() {
@@ -65,21 +64,6 @@ func main() {
 		gml := a.GraphML()
 		fmt.Printf("Writing GraphML graph to %s\n", *graphMLFile)
 		err = gml.Encode(gFile, true)
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	if *cytoscapeGraphFile != "" {
-		gFile, err := os.Create(*cytoscapeGraphFile)
-		if err != nil {
-			panic(err)
-		}
-		defer gFile.Close()
-
-		g := a.CytoscapeGraph()
-		fmt.Printf("Writing Cytoscape graph to %s\n", *cytoscapeGraphFile)
-		_, err = gFile.WriteString(g)
 		if err != nil {
 			panic(err)
 		}
