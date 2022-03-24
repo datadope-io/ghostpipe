@@ -31,6 +31,10 @@ type Architecture struct {
 	DBs       []*Database
 	Backends  []*Backend
 	Frontends []*Frontend
+	// Clusters almacena los grupos de servidores que deben estar unidos entre si.
+	// En el grafo se creará un link entre cada servidor y el resto de servidores
+	// del mismo cluster.
+	Clusters [][]ArchitectureServer
 	// Monkeys are functions that will "sabotage" the architecture, triggering alarms
 	Monkeys []func(simgo.Process)
 
@@ -98,6 +102,15 @@ func (a *Architecture) NewFrontend(name string, backend *Backend) *Frontend {
 	f := NewFrontend(name, backend, a.mon)
 	a.AddFrontend(f)
 	return f
+}
+
+// TODO generalizar con generics para poder crear clusters de cualquier tipo
+func (a *Architecture) NewClusterDB(servers []*Database) {
+	c := make([]ArchitectureServer, len(servers))
+	for i, s := range servers {
+		c[i] = s
+	}
+	a.Clusters = append(a.Clusters, c)
 }
 
 func (a *Architecture) AddServer(server *Server) {
@@ -211,6 +224,26 @@ func (a *Architecture) GraphML() *graphml.GraphML {
 			graphml.EdgeDirectionUndirected,
 			fmt.Sprintf("%s-%s", frontend.Name, frontend.Backend.Name),
 		)
+	}
+
+	// Creamos links entre servidores que pertenecen a un cluster
+	for _, cluster := range a.Clusters {
+		for _, serverA := range cluster {
+			for _, serverB := range cluster {
+				// No crear links entre un servidor con sí mismo
+				if serverA.GetName() == serverB.GetName() {
+					continue
+				}
+
+				_, err = g.AddEdge(serverMap[serverA.GetName()], serverMap[serverB.GetName()], map[string]interface{}{
+					"type":   ConnectEdge,
+					"weight": 1,
+				},
+					graphml.EdgeDirectionUndirected,
+					fmt.Sprintf("%s-%s", serverA.GetName(), serverB.GetName()),
+				)
+			}
+		}
 	}
 
 	return gm

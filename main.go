@@ -51,7 +51,8 @@ func main() {
 	a := Architecture{mon: mon}
 
 	// Select which topology to use (uncomment the one you want to use)
-	BackendFrontendNoise(&a)
+	// BackendFrontendNoise(&a)
+	DBCluster(&a)
 
 	// Output the graph in different formats
 	if *graphMLFile != "" {
