@@ -25,6 +25,21 @@ func (b *Frontend) GetName() string {
 	return b.Name
 }
 
+func (s *Frontend) GetAlarms() []string {
+	return []string{
+		"CPU",
+		"Memory",
+		"Disk",
+		"Ping",
+		"Proc",
+		"BackendConnection",
+	}
+}
+
+func (s *Frontend) GetType() string {
+	return string(FrontendNode)
+}
+
 // CheckAlarms print a message if the server has alarms.
 // It check alarms specific to the Frontend, plus generic alarms for the server
 // and also generate an alarm if the backend is not available.

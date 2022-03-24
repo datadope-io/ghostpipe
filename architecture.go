@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/fschuetz04/simgo"
+	"github.com/yaricom/goGraphML/graphml"
 )
 
 type (
@@ -152,6 +153,102 @@ func (a *Architecture) AddFrontend(frontend *Frontend) {
 
 func (a *Architecture) AddMonkey(monkey func(simgo.Process)) {
 	a.Monkeys = append(a.Monkeys, monkey)
+}
+
+func (a *Architecture) GraphML() *graphml.GraphML {
+	gm := graphml.NewGraphML("") // Si ponemos un description aquí, Cytoscape no es capaz de abrir el fichero
+	g, err := gm.AddGraph("ghostpipe-graph", graphml.EdgeDirectionUndirected, nil)
+	if err != nil {
+		panic(err)
+	}
+
+	// Mapa para poder obtener el nodo a partir del server. Para crear los links
+	// entre servidores.
+	serverMap := make(map[string]*graphml.Node)
+
+	createServer := func(server ArchitectureServer) {
+		n, err := g.AddNode(map[string]interface{}{
+			"id":    server.GetName(),
+			"name":  server.GetName(),
+			"label": server.GetName(),
+			"type":  server.GetType(),
+		},
+			server.GetName(),
+		)
+		if err != nil {
+			panic(err)
+		}
+
+		serverMap[server.GetName()] = n
+
+		for _, alarmName := range server.GetAlarms() {
+			id := fmt.Sprintf("%d", a.mon.generateEventID(server.GetName(), alarmName))
+			alarm, err := g.AddNode(map[string]interface{}{
+				"id":    id,
+				"name":  fmt.Sprintf("%s-%s", server.GetName(), alarmName),
+				"label": alarmName,
+				"type":  AlarmNode,
+			},
+				fmt.Sprintf("%s-%s", server.GetName(), alarmName),
+			)
+			if err != nil {
+				panic(err)
+			}
+
+			_, err = g.AddEdge(n, alarm, map[string]interface{}{
+				"type":   TriggerEdge,
+				"weight": 1,
+			},
+				graphml.EdgeDirectionUndirected,
+				fmt.Sprintf("%s-%s", server.GetName(), alarmName),
+			)
+		}
+	}
+
+	// Add the Servers
+	for _, server := range a.Servers {
+		createServer(server)
+	}
+
+	for _, server := range a.DBs {
+		createServer(server)
+	}
+
+	for _, backend := range a.Backends {
+		createServer(backend)
+	}
+
+	for _, frontend := range a.Frontends {
+		createServer(frontend)
+	}
+
+	// Create links between servers
+	// Lo ejecutamos tras importar todos los servidores para asegurarnos de que
+	// ya se han añadido.
+
+	for _, backend := range a.Backends {
+		// Add edge between the backend and the database
+		_, err = g.AddEdge(serverMap[backend.Name], serverMap[backend.DBEngine.Name], map[string]interface{}{
+			"type":   ConnectEdge,
+			"weight": 1,
+		},
+			graphml.EdgeDirectionUndirected,
+			fmt.Sprintf("%s-%s", backend.Name, backend.DBEngine.Name),
+		)
+	}
+
+	for _, frontend := range a.Frontends {
+		// Add edge between the frontend and the backend
+		_, err = g.AddEdge(serverMap[frontend.Name], serverMap[frontend.Backend.Name], map[string]interface{}{
+			"type":   ConnectEdge,
+			"weight": 1,
+		},
+			graphml.EdgeDirectionUndirected,
+			fmt.Sprintf("%s-%s", frontend.Name, frontend.Backend.Name),
+		)
+	}
+
+	return gm
 }
 
 // CytoscapeGraph return a JSON representation of the architecture in the

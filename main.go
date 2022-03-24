@@ -40,8 +40,9 @@ const (
 
 // Create flags to define graph and events output files
 var (
-	graphFile  = flag.String("graph", "graph.cyjs", "File to save the graph in Cytoscape JSON format")
-	eventsFile = flag.String("events", "events.csv", "File to save the events in CSV format")
+	cytoscapeGraphFile = flag.String("cytoscape", "", "File to save the graph in Cytoscape JSON format")
+	graphMLFile        = flag.String("graphml", "graph.graphml", "File to save the graph in GraphML format")
+	eventsFile         = flag.String("events", "events.csv", "File to save the events in CSV format")
 )
 
 func main() {
@@ -82,17 +83,34 @@ func main() {
 		noiseServers = append(noiseServers, a.NewServer("noise"+fmt.Sprintf("%d", i)))
 	}
 
-	g := a.CytoscapeGraph()
-	gFile, err := os.Create(*graphFile)
-	if err != nil {
-		panic(err)
-	}
-	defer gFile.Close()
+	if *graphMLFile != "" {
+		gFile, err := os.Create(*graphMLFile)
+		if err != nil {
+			panic(err)
+		}
+		defer gFile.Close()
 
-	fmt.Printf("Writing graph to %s\n", *graphFile)
-	_, err = gFile.WriteString(g)
-	if err != nil {
-		panic(err)
+		gml := a.GraphML()
+		fmt.Printf("Writing GraphML graph to %s\n", *graphMLFile)
+		err = gml.Encode(gFile, true)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	if *cytoscapeGraphFile != "" {
+		gFile, err := os.Create(*cytoscapeGraphFile)
+		if err != nil {
+			panic(err)
+		}
+		defer gFile.Close()
+
+		g := a.CytoscapeGraph()
+		fmt.Printf("Writing Cytoscape graph to %s\n", *cytoscapeGraphFile)
+		_, err = gFile.WriteString(g)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	_ = frontendA1

@@ -2,7 +2,10 @@ module github.com/datadope-io/ghostpipe
 
 go 1.17
 
-require github.com/fschuetz04/simgo v0.5.0
+require (
+	github.com/fschuetz04/simgo v0.5.0
+	github.com/yaricom/goGraphML v1.1.0
+)
 
 require (
 	github.com/davecgh/go-spew v1.1.0 // indirect

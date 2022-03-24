@@ -20,6 +20,20 @@ func (d *Database) GetName() string {
 	return d.Name
 }
 
+func (s *Database) GetAlarms() []string {
+	return []string{
+		"CPU",
+		"Memory",
+		"Disk",
+		"Ping",
+		"DBEngine",
+	}
+}
+
+func (s *Database) GetType() string {
+	return string(DBNode)
+}
+
 // CheckAlarms print a message if the database engines is not working
 // or the base server has alarms.
 func (d *Database) CheckAlarms(t float64) {

@@ -24,6 +24,12 @@ type MonitoredServer interface {
 	CheckAlarms(float64)
 }
 
+type ArchitectureServer interface {
+	GetName() string
+	GetType() string
+	GetAlarms() []string
+}
+
 func NewServer(name string, mon MonitorSystem) *Server {
 	return &Server{
 		Name: name,
@@ -33,6 +39,19 @@ func NewServer(name string, mon MonitorSystem) *Server {
 
 func (d *Server) GetName() string {
 	return d.Name
+}
+
+func (s *Server) GetAlarms() []string {
+	return []string{
+		"CPU",
+		"Memory",
+		"Disk",
+		"Ping",
+	}
+}
+
+func (s *Server) GetType() string {
+	return string(ServerNode)
 }
 
 // Run check the alarms of each server each interval
