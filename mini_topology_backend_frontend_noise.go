@@ -10,7 +10,7 @@ import (
 // BackendFrontendNoise es una topología que simula dos bases de datos donde hay
 // conectados backends y frontends a esos backends.
 // Luego tenemos varios servidores aislados con sus alarmas.
-func BackendFrontendNoise(a *Architecture) {
+func MiniBackendFrontendNoise(a *Architecture) {
 	// Add servers to the architecture
 
 	// One database serving three different backends.
@@ -22,31 +22,15 @@ func BackendFrontendNoise(a *Architecture) {
 
 	backendB := a.NewBackend("backendB", db1)
 	frontendB1 := a.NewFrontend("frontendB1", backendB)
-	frontendB2 := a.NewFrontend("frontendB2", backendB)
-
-	backendC := a.NewBackend("backendC", db1)
-	frontendC1 := a.NewFrontend("frontendC1", backendC)
-	frontendC2 := a.NewFrontend("frontendC2", backendC)
-	frontendC3 := a.NewFrontend("frontendC3", backendC)
-
-	// One app with frontend, backend and database
-	db2 := a.NewDatabase("db2")
-	backendD := a.NewBackend("backendD", db2)
-	frontendD1 := a.NewFrontend("frontendD1", backendD)
 
 	// Several servers as noise
 	noiseServers := []*Server{}
-	for i := 0; i < 50; i++ {
+	for i := 0; i < 5; i++ {
 		noiseServers = append(noiseServers, a.NewServer("noise"+fmt.Sprintf("%d", i)))
 	}
 
 	_ = frontendA1
 	_ = frontendB1
-	_ = frontendB2
-	_ = frontendC1
-	_ = frontendC2
-	_ = frontendC3
-	_ = frontendD1
 
 	// Disconnect db1 each 60' and reconnect it after 5'
 	a.AddMonkey(func(proc simgo.Process) {
@@ -60,21 +44,6 @@ func BackendFrontendNoise(a *Architecture) {
 			db1.PingAlarm = AlarmEnabled
 
 			proc.Wait(proc.Timeout(55))
-		}
-	})
-
-	// Disconnect backendD each 120' and reconnect it after 60'
-	a.AddMonkey(func(proc simgo.Process) {
-		proc.Wait(proc.Timeout(120))
-		for {
-			// fmt.Println("\nmonkey: disconnect backendD")
-			backendD.PingAlarm = AlarmTriggered
-
-			proc.Wait(proc.Timeout(60))
-			// fmt.Println("monkey: reconnect backendD")
-			backendD.PingAlarm = AlarmEnabled
-
-			proc.Wait(proc.Timeout(60))
 		}
 	})
 

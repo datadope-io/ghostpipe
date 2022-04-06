@@ -29,74 +29,36 @@ func DBCluster(a *Architecture) {
 		// Esta llamada busca crear los edges entre los servidores
 		a.NewClusterDB(clusters[tech])
 
-		/* TODO esta cogiendo únicamente el último valor de la variable tech
+		t := tech // Copia de la variable para que no se vea modificada por el loop al crear el func literal
+
 		// Simulamos una subida de carga, que dispara la alama de CPU en todos los servidores
 		a.AddMonkey(func(proc simgo.Process) {
-			proc.Wait(proc.Timeout(60))
 			for {
-				for _, db := range clusters[tech] {
+				proc.Wait(proc.Timeout(float64(100 + rand.Intn(400))))
+				for _, db := range clusters[t] {
 					db.CPUAlarm = AlarmTriggered
 				}
-
-				// Wait for a random time between 100 and 500 seconds
-				proc.Wait(proc.Timeout(float64(100 + rand.Intn(400))))
 			}
 		})
-		*/
+
+		// Simulamos una subida de carga, que dispara la alama de memoria en todos los servidores
+		a.AddMonkey(func(proc simgo.Process) {
+			for {
+				proc.Wait(proc.Timeout(float64(100 + rand.Intn(700))))
+				for _, db := range clusters[t] {
+					db.MemoryAlarm = AlarmTriggered
+				}
+			}
+		})
+
+		// Simulamos un llenado de disco
+		a.AddMonkey(func(proc simgo.Process) {
+			for {
+				proc.Wait(proc.Timeout(float64(100 + rand.Intn(1200))))
+				for _, db := range clusters[t] {
+					db.DiskAlarm = AlarmTriggered
+				}
+			}
+		})
 	}
-
-	a.AddMonkey(func(proc simgo.Process) {
-		proc.Wait(proc.Timeout(60))
-		for {
-			for _, db := range clusters["mariadb"] {
-				db.CPUAlarm = AlarmTriggered
-			}
-			proc.Wait(proc.Timeout(float64(100 + rand.Intn(400))))
-		}
-	})
-
-	a.AddMonkey(func(proc simgo.Process) {
-		proc.Wait(proc.Timeout(60))
-		for {
-			for _, db := range clusters["mysql"] {
-				db.CPUAlarm = AlarmTriggered
-			}
-
-			// Wait for a random time between 100 and 500 seconds
-			proc.Wait(proc.Timeout(float64(100 + rand.Intn(400))))
-		}
-	})
-	a.AddMonkey(func(proc simgo.Process) {
-		proc.Wait(proc.Timeout(60))
-		for {
-			for _, db := range clusters["postgresql"] {
-				db.CPUAlarm = AlarmTriggered
-			}
-
-			// Wait for a random time between 100 and 500 seconds
-			proc.Wait(proc.Timeout(float64(100 + rand.Intn(400))))
-		}
-	})
-	a.AddMonkey(func(proc simgo.Process) {
-		proc.Wait(proc.Timeout(60))
-		for {
-			for _, db := range clusters["mongodb"] {
-				db.CPUAlarm = AlarmTriggered
-			}
-
-			// Wait for a random time between 100 and 500 seconds
-			proc.Wait(proc.Timeout(float64(100 + rand.Intn(400))))
-		}
-	})
-	a.AddMonkey(func(proc simgo.Process) {
-		proc.Wait(proc.Timeout(60))
-		for {
-			for _, db := range clusters["elasticsearch"] {
-				db.CPUAlarm = AlarmTriggered
-			}
-
-			// Wait for a random time between 100 and 500 seconds
-			proc.Wait(proc.Timeout(float64(100 + rand.Intn(400))))
-		}
-	})
 }
