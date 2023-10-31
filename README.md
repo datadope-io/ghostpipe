@@ -86,3 +86,63 @@ All frontends should be connected to one backend.
 |-----|--|--|
 | Proc | X | Availability take into account also Server.Ping |
 | BackendConnection | | Its triggered if the connected backend is not available |
+
+
+## Datasets
+
+### MiniBackendFrontendNoise
+Una DB con dos backends. Cada backend con un frontend.
+
+Cinco nodos de ruido.
+
+Se tira la DB cada 60', afectando a los backend.
+
+### BackendFrontendNoise
+Una DB con 3 backends, cada uno con sus frontends. Tiramos esta db cada 60'
+
+Otra DB con otro backend y su frontend. Tiramos el backend cada 120'.
+
+50 nodos de ruido.
+
+### DBCluster
+Varios clusters de distintas tecnologías y ruido.
+
+Cuando se cae una alarma de algún nodo de un cluster, se caen todos los de ese cluster.
+
+### Relaciones inesperadas
+Relaciones topológicas cercanas por "culpa" del DNS.
+
+Hacer un dataset como el "BackendFrontendNoise" pero todo conectado al DNS.
+
+Una posible solución, es que la distancia entre nodos pueda verse afectado por pesos en los edge y/o que el grafo sea direccional.
+
+
+### Mucho ruido y pocas nueces (TODO)
+Meter mucho mucho ruido y tirar los servicios muy poco.
+
+La idea es que la distancia de correlación temporal va a ser tan pequeña que no va a aportar y solo basándose en topología y etiquetas no va a encontrar nada.
+
+Porque además, las alarmas de los backend conectados a la db van a llamarse distintas.
+
+
+### Primos lejanos (TODO)
+Cuando se cae un servicio, se cae algo conectado a bastantes saltos de distancia.
+
+Interconectar los ruidos con algunos saltos.
+
+Ejemplo, se cae un bd, y donde vemos el error es en el balanceador (balanceador->frontend->backend->db)
+
+
+### No me acuerdo ni de mi nombre (TODO)
+Intentar simular que se cae el server DNS y entonces muchos servicios se ven afectados.
+
+Relación de topología con el DNS.
+
+
+### Recien nacido (TODO)
+Intentamos simular que sucedería si vemos por primera vez una caída de un servicio y a que implica.
+
+No tenemos histórico. Parecido a "mucho ruido y pocas nueces".
+
+Por ejemplo, acaban de instalar un nuevo par de máquinas relacionadas, se cae una y la otra se ve afectada, pero este caso
+nunca lo habíamos visto porque no existía.

@@ -19,10 +19,12 @@ const (
 	DBNode       NodeType = "db"
 	BackendNode  NodeType = "backend"
 	FrontendNode NodeType = "frontend"
+	DNSNode      NodeType = "dns"
 	AlarmNode    NodeType = "alarm"
 
-	TriggerEdge EdgeType = "trigger"
-	ConnectEdge EdgeType = "connect"
+	TriggerEdge    EdgeType = "trigger"
+	ConnectEdge    EdgeType = "connect"
+	DNSConnectEdge EdgeType = "DNSconnect"
 )
 
 // Architecture store the different servers of our application
@@ -31,6 +33,7 @@ type Architecture struct {
 	DBs       []*Database
 	Backends  []*Backend
 	Frontends []*Frontend
+	DNSs      []*DNS
 	// Clusters almacena los grupos de servidores que deben estar unidos entre si.
 	// En el grafo se creará un link entre cada servidor y el resto de servidores
 	// del mismo cluster.
@@ -104,6 +107,12 @@ func (a *Architecture) NewFrontend(name string, backend *Backend) *Frontend {
 	return f
 }
 
+func (a *Architecture) NewDNS(name string) *DNS {
+	f := NewDNS(name, a.mon)
+	a.AddDNS(f)
+	return f
+}
+
 // TODO generalizar con generics para poder crear clusters de cualquier tipo
 func (a *Architecture) NewClusterDB(servers []*Database) {
 	c := make([]ArchitectureServer, len(servers))
@@ -129,8 +138,33 @@ func (a *Architecture) AddFrontend(frontend *Frontend) {
 	a.Frontends = append(a.Frontends, frontend)
 }
 
+func (a *Architecture) AddDNS(dns *DNS) {
+	a.DNSs = append(a.DNSs, dns)
+}
+
 func (a *Architecture) AddMonkey(monkey func(simgo.Process)) {
 	a.Monkeys = append(a.Monkeys, monkey)
+}
+
+// GetAllServers return all servers, dbs, backends, frontends and dns
+func (a *Architecture) GetAllServers() []MonitoredServer {
+	allServers := make([]MonitoredServer, 0)
+	for _, server := range a.Servers {
+		allServers = append(allServers, server)
+	}
+	for _, db := range a.DBs {
+		allServers = append(allServers, db)
+	}
+	for _, backend := range a.Backends {
+		allServers = append(allServers, backend)
+	}
+	for _, frontend := range a.Frontends {
+		allServers = append(allServers, frontend)
+	}
+	for _, dns := range a.DNSs {
+		allServers = append(allServers, dns)
+	}
+	return allServers
 }
 
 func (a *Architecture) GraphML() *graphml.GraphML {
@@ -200,6 +234,10 @@ func (a *Architecture) GraphML() *graphml.GraphML {
 		createServer(frontend)
 	}
 
+	for _, dns := range a.DNSs {
+		createServer(dns)
+	}
+
 	// Create links between servers
 	// Lo ejecutamos tras importar todos los servidores para asegurarnos de que
 	// ya se han añadido.
@@ -243,6 +281,19 @@ func (a *Architecture) GraphML() *graphml.GraphML {
 					fmt.Sprintf("%s-%s", serverA.GetName(), serverB.GetName()),
 				)
 			}
+		}
+	}
+
+	// Creamos links entre los servidores que usan un DNS
+	for _, dns := range a.DNSs {
+		for _, server := range dns.Clients {
+			_, err = g.AddEdge(serverMap[dns.Name], serverMap[server.GetName()], map[string]interface{}{
+				"type":   DNSConnectEdge,
+				"weight": 1,
+			},
+				graphml.EdgeDirectionUndirected,
+				fmt.Sprintf("%s-%s", dns.Name, server.GetName()),
+			)
 		}
 	}
 

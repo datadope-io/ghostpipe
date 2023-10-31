@@ -21,13 +21,8 @@ func (d *Database) GetName() string {
 }
 
 func (s *Database) GetAlarms() []string {
-	return []string{
-		"CPU",
-		"Memory",
-		"Disk",
-		"Ping",
-		"DBEngine",
-	}
+	serverAlarms := s.Server.GetAlarms()
+	return append(serverAlarms, []string{"DBEngine"}...)
 }
 
 func (s *Database) GetType() string {
@@ -49,4 +44,13 @@ func (d *Database) CheckAlarms(t float64) {
 // if the db engine is available and the server is available.
 func (d *Database) Available() bool {
 	return d.Server.Available() && d.DBEngineAlarm == AlarmEnabled
+}
+
+func (d *Database) SetAlarm(alarm string, status AlarmStatus) {
+	switch alarm {
+	case "DBEngine":
+		d.DBEngineAlarm = AlarmTriggered
+	default:
+		d.Server.SetAlarm(alarm, status)
+	}
 }

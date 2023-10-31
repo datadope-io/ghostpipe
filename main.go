@@ -52,8 +52,9 @@ func main() {
 
 	// Select which topology to use (uncomment the one you want to use)
 	// MiniBackendFrontendNoise(&a)
-	BackendFrontendNoise(&a)
-	//  DBCluster(&a)
+	// BackendFrontendNoise(&a)
+	// DBCluster(&a)
+	RelacionesInesperadas(&a)
 
 	// Output the graph in different formats
 	if *graphMLFile != "" {

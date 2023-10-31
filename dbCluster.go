@@ -61,4 +61,32 @@ func DBCluster(a *Architecture) {
 			}
 		})
 	}
+
+	// Several servers as noise
+	noiseServers := []*Server{}
+	for i := 0; i < 50; i++ {
+		noiseServers = append(noiseServers, a.NewServer("noise"+fmt.Sprintf("%d", i)))
+	}
+
+	// Generate alarm noise
+	a.AddMonkey(func(proc simgo.Process) {
+		for {
+			// Get one of the noise servers
+			noiseServer := noiseServers[rand.Intn(len(noiseServers))]
+
+			// Trigger one the alarms of the server
+			switch rand.Intn(4) {
+			case 0:
+				noiseServer.CPUAlarm = AlarmTriggered
+			case 1:
+				noiseServer.MemoryAlarm = AlarmTriggered
+			case 2:
+				noiseServer.DiskAlarm = AlarmTriggered
+			case 3:
+				noiseServer.PingAlarm = AlarmTriggered
+			}
+
+			proc.Wait(proc.Timeout(1))
+		}
+	})
 }

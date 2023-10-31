@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 
 	"github.com/fschuetz04/simgo"
@@ -14,6 +15,7 @@ type Server struct {
 	MemoryAlarm AlarmStatus
 	DiskAlarm   AlarmStatus
 	PingAlarm   AlarmStatus
+	DNSAlarm    AlarmStatus
 
 	// mon connection to the monitoring system
 	mon MonitorSystem
@@ -22,6 +24,8 @@ type Server struct {
 type MonitoredServer interface {
 	GetName() string
 	CheckAlarms(float64)
+	// SetAlarm using the string to identify the alarm, set the alarm to the given status
+	SetAlarm(string, AlarmStatus)
 }
 
 type ArchitectureServer interface {
@@ -47,6 +51,7 @@ func (s *Server) GetAlarms() []string {
 		"Memory",
 		"Disk",
 		"Ping",
+		"DNS",
 	}
 }
 
@@ -88,9 +93,31 @@ func (s *Server) CheckAlarms(t float64) {
 		s.PingAlarm = AlarmACK
 		s.mon.handleAlarm(s.Name, "Ping", t)
 	}
+
+	if s.DNSAlarm == AlarmTriggered {
+		s.DNSAlarm = AlarmACK
+		s.mon.handleAlarm(s.Name, "DNS", t)
+	}
 }
 
 // Available returns true if the server is considered available
 func (s *Server) Available() bool {
 	return s.PingAlarm == AlarmEnabled
+}
+
+func (s *Server) SetAlarm(alarm string, status AlarmStatus) {
+	switch alarm {
+	case "CPU":
+		s.CPUAlarm = status
+	case "Memory":
+		s.MemoryAlarm = status
+	case "Disk":
+		s.DiskAlarm = status
+	case "Ping":
+		s.PingAlarm = status
+	case "DNS":
+		s.DNSAlarm = status
+	default:
+		panic(fmt.Sprintf("Unknown alarm: %s", alarm))
+	}
 }

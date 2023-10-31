@@ -26,14 +26,8 @@ func (b *Frontend) GetName() string {
 }
 
 func (s *Frontend) GetAlarms() []string {
-	return []string{
-		"CPU",
-		"Memory",
-		"Disk",
-		"Ping",
-		"Proc",
-		"BackendConnection",
-	}
+	serverAlarms := s.Server.GetAlarms()
+	return append(serverAlarms, []string{"Proc", "BackendConnection"}...)
 }
 
 func (s *Frontend) GetType() string {
@@ -67,4 +61,15 @@ func (b *Frontend) CheckAlarms(t float64) {
 // if the Frontend process is running and the database is available.
 func (b *Frontend) Available() bool {
 	return b.Server.Available() && b.ProcAlarm == AlarmEnabled
+}
+
+func (b *Frontend) SetAlarm(alarm string, status AlarmStatus) {
+	switch alarm {
+	case "Proc":
+		b.ProcAlarm = status
+	case "BackendConnection":
+		b.BackendConnectionAlarm = status
+	default:
+		b.Server.SetAlarm(alarm, status)
+	}
 }
